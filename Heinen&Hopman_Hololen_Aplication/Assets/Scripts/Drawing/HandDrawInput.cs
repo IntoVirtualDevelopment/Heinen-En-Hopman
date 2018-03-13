@@ -38,6 +38,7 @@ public class HandDrawInput : DrawInput, IInputHandler
             return;
         }
 
+        arg.state.sourcePose.TryGetPosition(out vec);
         debugtext[0].text = "HandDrawPosition: " + vec;
 
         debugupdate++;

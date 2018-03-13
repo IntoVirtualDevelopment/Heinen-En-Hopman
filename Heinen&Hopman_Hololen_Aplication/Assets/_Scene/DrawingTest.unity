@@ -143,7 +143,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   linePrefab: {fileID: 0}
-  lineSegmentLenght: 0.05
+  lineSegmentLenght: 0.02
   styles: {fileID: 680642279}
   lineObject: {fileID: 1058977088}
 --- !u!4 &89593475
