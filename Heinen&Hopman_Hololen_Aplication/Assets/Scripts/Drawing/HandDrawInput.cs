@@ -14,9 +14,17 @@ public class HandDrawInput : DrawInput, IInputHandler
 
     #region variables
 
-    [SerializeField] private Text[] debugtext;
+    //hands tracked
+    private List<uint> hands = new List<uint>();
 
+    //hands tracked as objects
+    public Dictionary<uint, GameObject> trackedHandObjects = new Dictionary<uint, GameObject>();
+
+    //handposition
     private Vector3 vec;
+
+    //debug
+    [SerializeField] private Text[] debugtext;
 
     private int debugHandAmount;
     private int handlostcount;
@@ -81,9 +89,23 @@ public class HandDrawInput : DrawInput, IInputHandler
         }
 
         debugHandAmount++;
-        debugtext[1].text = "hand detected: " + debugHandAmount;
+        debugtext[1].text = "Hand detected: " + debugHandAmount;
+
+        debugtext[4].text = "Hand ID: " + arg.state.source.id;
 
         arg.state.sourcePose.TryGetPosition(out vec);
+
+        hands.Add(arg.state.source.id);
+
+        var obj = Instantiate(gameObject) as GameObject;
+        Vector3 pos;
+
+        if (arg.state.sourcePose.TryGetPosition(out pos))
+        {
+            obj.transform.position = pos;
+        }
+
+        trackedHandObjects.Add(arg.state.source.id, obj);
 
         /*trackedHands.Add(state.source.id);
 
@@ -94,12 +116,6 @@ public class HandDrawInput : DrawInput, IInputHandler
             obj.transform.position = pos;
         }
         trackingObject.Add(state.source.id, obj);*/
-    }
-
-    private void Update()
-    {
-        
-        //print("handpos: " + vec);
     }
 
     public void OnInputDown(InputEventData eventData)
