@@ -8,7 +8,7 @@ public class HandDrawPosition : MonoBehaviour
 {
     #region variables
 
-
+    [SerializeField] private GameObject view;
 
     #endregion
         
@@ -22,4 +22,25 @@ public class HandDrawPosition : MonoBehaviour
 		
 	}
 
+    private void OnEnable()
+    {
+        HandDrawInput.ClickedDown += HandDrawInput_ClickedDown;
+        HandDrawInput.ClickedUp += HandDrawInput_ClickedUp;
+    }
+
+    private void OnDisable()
+    {
+        HandDrawInput.ClickedDown -= HandDrawInput_ClickedDown;
+        HandDrawInput.ClickedUp -= HandDrawInput_ClickedUp;
+    }
+
+    private void HandDrawInput_ClickedUp(uint id)
+    {
+        //stop drawing
+    }
+
+    private void HandDrawInput_ClickedDown(uint id)
+    {
+        //draw
+    }
 }

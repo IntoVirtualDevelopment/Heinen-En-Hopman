@@ -13,12 +13,26 @@ public class HandDrawInput : DrawInput, IInputHandler
 {
 
     #region variables
+    //delagate
+    [HideInInspector]public delegate void clickedDelagate(uint id);
+
+    //clicked event
+    [HideInInspector] public static event clickedDelagate ClickedDown;
+
+    //clicked up event
+    [HideInInspector] public static event clickedDelagate ClickedUp;
+
+    //pressed bool
+    private bool pressed = false;
 
     //hands tracked
     private List<uint> hands = new List<uint>();
 
     //hands tracked as objects
-    public Dictionary<uint, GameObject> trackedHandObjects = new Dictionary<uint, GameObject>();
+    /// <summary>
+    /// a dictionary of uints and gameobjects
+    /// </summary>
+    [HideInInspector] public Dictionary<uint, GameObject> trackedHandObjects = new Dictionary<uint, GameObject>();
 
     //handposition
     private Vector3 vec;
@@ -29,6 +43,7 @@ public class HandDrawInput : DrawInput, IInputHandler
     private int debugHandAmount;
     private int handlostcount;
     private int debugupdate;
+    //
 
     #endregion
 
@@ -37,34 +52,62 @@ public class HandDrawInput : DrawInput, IInputHandler
         InteractionManager.InteractionSourceDetected += InteractionManager_SourceDetected;
         InteractionManager.InteractionSourceLost += InteractionManager_SourceLost;
         InteractionManager.InteractionSourceUpdated += InteractionManager_SourceUpdated;
+
+        debugtext[4].text = "pressed: " + "false";
     }
 
     private void InteractionManager_SourceUpdated(InteractionSourceUpdatedEventArgs arg)
     {
-        if (arg.state.source.kind != InteractionSourceKind.Hand)
+        uint id = arg.state.source.id;
+
+        if (arg.state.source.kind == InteractionSourceKind.Hand)
         {
-            return;
-        }
+            debugupdate++;
+            debugtext[3].text = "update: " + debugupdate;
 
-        arg.state.sourcePose.TryGetPosition(out vec);
-        debugtext[0].text = "HandDrawPosition: " + vec;
-
-        debugupdate++;
-        debugtext[3].text = "update: " + debugupdate;
-
-        /*uint id = state.source.id;
-        Vector3 pos;
-
-        if (state.source.kind == InteractionSourceKind.Hand)
-        {
-            if (trackingObject.ContainsKey(state.source.id))
+            if (trackedHandObjects.ContainsKey(id))
             {
-                if (state.properties.location.TryGetPosition(out pos))
+                //get/set position
+                if (arg.state.sourcePose.TryGetPosition(out vec))
                 {
-                    trackingObject[state.source.id].transform.position = pos;
+                    trackedHandObjects[id].transform.position = vec;
+                    debugtext[0].text = "HandDrawPosition: " + trackedHandObjects[id].transform.position;
+                }
+
+                if (arg.state.selectPressed)
+                {
+                    ClickedDown(id);
+                    pressed = true;
+
+                    debugtext[4].text = "pressed: " + id + " presed";
+                }
+
+                if (arg.state.anyPressed)
+                {
+                    debugtext[4].text = "pressed: " + id + " anyPressed";
+                }
+
+                if (arg.state.menuPressed)
+                {
+                    debugtext[4].text = "pressed: " + id + " menuPressed";
+                }
+
+                Vector3 velocity;
+
+                if (arg.state.sourcePose.TryGetAngularVelocity(out velocity))
+                {
+                    debugtext[6].text = "velocity: " + velocity;
+                }
+
+                if (pressed && arg.state.selectPressed)
+                {
+                    ClickedUp(id);
+                    pressed = false;
+
+                    debugtext[4].text = "pressed: " + "no";
                 }
             }
-        }*/
+        }
     }
 
     private void InteractionManager_SourceLost(InteractionSourceLostEventArgs arg)
@@ -74,48 +117,63 @@ public class HandDrawInput : DrawInput, IInputHandler
             return;
         }
 
-        debugHandAmount--;
-        debugtext[1].text = "hand detected: " + debugHandAmount;
+        uint id = arg.state.source.id;
 
-        handlostcount++;
-        debugtext[2].text = "hand lost: " + handlostcount;
+        if (hands.Contains(id))
+        {
+            //remove id
+            hands.Remove(arg.state.source.id);
+
+            //destroy object
+            Destroy(trackedHandObjects[id]);
+
+            //removeobject
+            trackedHandObjects.Remove(id);
+
+            debugHandAmount--;
+            debugtext[1].text = "hand detected: " + debugHandAmount;
+
+            handlostcount++;
+            debugtext[2].text = "hand lost: " + handlostcount + " id: " + id;
+        }
     }
 
     private void InteractionManager_SourceDetected(InteractionSourceDetectedEventArgs arg)
     {
-       if (arg.state.source.kind != InteractionSourceKind.Hand)
+        //check if its a hand
+        if (arg.state.source.kind != InteractionSourceKind.Hand)
         {
             return;
         }
 
+        //get hand id
+        uint id = arg.state.source.id;
+
+        //debug
+        debugtext[5].text = "new Hand ID: " + id;
+
+        //debug
         debugHandAmount++;
         debugtext[1].text = "Hand detected: " + debugHandAmount;
 
-        debugtext[4].text = "Hand ID: " + arg.state.source.id;
-
-        arg.state.sourcePose.TryGetPosition(out vec);
-
+        //record id
         hands.Add(arg.state.source.id);
 
-        var obj = Instantiate(gameObject) as GameObject;
+        //create a new hand object
+        GameObject gObj = new GameObject(id.ToString());
+
+        //hand position
         Vector3 pos;
 
+        //this function sets pos position and returns true if sucsesfull
         if (arg.state.sourcePose.TryGetPosition(out pos))
         {
-            obj.transform.position = pos;
+            //set our newly created objects position 
+            gObj.transform.position = pos;
         }
 
-        trackedHandObjects.Add(arg.state.source.id, obj);
-
-        /*trackedHands.Add(state.source.id);
-
-        var obj = Instantiate(TrackingObject) as GameObject;
-        Vector3 pos;
-        if (state.properties.location.TryGetPosition(out pos))
-        {
-            obj.transform.position = pos;
-        }
-        trackingObject.Add(state.source.id, obj);*/
+        //tracked hands
+        trackedHandObjects.Add(id, gObj);
     }
 
     public void OnInputDown(InputEventData eventData)
