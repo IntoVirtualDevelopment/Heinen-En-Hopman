@@ -8,6 +8,8 @@ using UnityEngine.UI;
 
 public class NetworkHost : NetworkManager {
 
+    public static NetworkHost instance;
+
 	public int playerCount;
 
 	[System.Serializable]
@@ -18,13 +20,23 @@ public class NetworkHost : NetworkManager {
 
 	public Server_Init server_Init = new Server_Init();
 	public UnityEvent Server_Connected = new UnityEvent();
-	
-	public void StartupServer() {
-		StartServer();
+
+    public static string IPPort {
+        get {
+            return instance.networkAddress + ":" + instance.networkPort;
+        }
+    }
+
+    private void Start() {
+        instance = this;
+    }
+
+    public void StartupServer() {
+		StartHost();
 	}
 
 	public override void OnStartServer() {
-		server_Init.Invoke(Network.player.externalIP + ":" + Network.player.externalPort);
+		server_Init.Invoke(networkAddress + ":" + networkPort);
 		Debug.Log("Server ready on " + networkAddress + ":" + networkPort  + "!");
 	}
 

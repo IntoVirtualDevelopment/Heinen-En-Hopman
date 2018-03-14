@@ -1,0 +1,1 @@
+C:\Users\Gebruiker\Documents\GitHub\Heinen-En-Hopman\HololensApplicatie\App\HololensApplicatie\HololensApplicatie.csproj;x86
