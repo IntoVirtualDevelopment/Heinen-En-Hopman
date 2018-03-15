@@ -9,12 +9,12 @@ using UnityEngine.UI;
 
 //Creator: Brian Boersen
 
-public class HandDrawInput : DrawInput, IInputHandler
+public class HandDrawInput : DrawInput//, IInputHandler
 {
 
     #region variables
     //delagate
-    [HideInInspector]public delegate void clickedDelagate(uint id);
+    [HideInInspector]public delegate void clickedDelagate(GameObject hand);
 
     //clicked event
     [HideInInspector] public static event clickedDelagate ClickedDown;
@@ -29,10 +29,7 @@ public class HandDrawInput : DrawInput, IInputHandler
     private List<uint> hands = new List<uint>();
 
     //hands tracked as objects
-    /// <summary>
-    /// a dictionary of uints and gameobjects
-    /// </summary>
-    [HideInInspector] public Dictionary<uint, GameObject> trackedHandObjects = new Dictionary<uint, GameObject>();
+    private Dictionary<uint, GameObject> trackedHandObjects = new Dictionary<uint, GameObject>();
 
     //handposition
     private Vector3 vec;
@@ -76,7 +73,7 @@ public class HandDrawInput : DrawInput, IInputHandler
 
                 if (arg.state.selectPressed)
                 {
-                    ClickedDown(id);
+                    ClickedDown(trackedHandObjects[id]);
                     pressed = true;
 
                     debugtext[4].text = "pressed: " + id + " presed";
@@ -101,7 +98,7 @@ public class HandDrawInput : DrawInput, IInputHandler
 
                 if (pressed && arg.state.selectPressed)
                 {
-                    ClickedUp(id);
+                    ClickedUp(trackedHandObjects[id]);
                     pressed = false;
 
                     debugtext[4].text = "pressed: " + "no";
@@ -176,6 +173,7 @@ public class HandDrawInput : DrawInput, IInputHandler
         trackedHandObjects.Add(id, gObj);
     }
 
+    /*
     public void OnInputDown(InputEventData eventData)
     {
         base.down();
@@ -185,5 +183,5 @@ public class HandDrawInput : DrawInput, IInputHandler
     {
         base.up();
     }
-
+    */
 }
